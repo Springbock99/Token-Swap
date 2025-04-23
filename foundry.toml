@@ -1,13 +1,16 @@
 [profile.default]
-src = "src"
+src = "contracts"
 out = "out"
-libs = ["lib", "dependencies"]
+libs = ["dependencies"]
+solc_version = "0.8.25"
 
 remappings = [
-  "@openzeppelin-contracts-5.2.0/=dependencies/@openzeppelin-contracts-5.2.0/",
+  "@openzeppelin-contracts-5.3.0/=dependencies/@openzeppelin-contracts-5.3.0/",
+  "forge-std/=dependencies/forge-std-1.9.6/src/"
 ]
 
 [dependencies]
 "@openzeppelin-contracts" = "5.2.0"
+forge-std = "1.9.6"
 
 # See more config options https://github.com/foundry-rs/foundry/blob/master/crates/config/README.md#all-options
