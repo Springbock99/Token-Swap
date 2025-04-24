@@ -7,6 +7,8 @@ import {ReentrancyGuard} from "@openzeppelin-contracts-5.3.0/utils/ReentrancyGua
 error InvalidAddress();
 error InvalidAmount();
 error InsufficientFunds();
+error InsufficientLiquidity();
+error SlippageTooHigh();
 
 contract SimpleSwap is ReentrancyGuard {
     IERC20 public daiToken;
@@ -48,4 +50,28 @@ contract SimpleSwap is ReentrancyGuard {
 
         _syncReserve();
     }
+
+    function swapDaiForWeth(uint256 amountIn) external nonReentrant {
+        if (amountIn == 0) revert InvalidAmount();
+
+        _syncReserve();
+
+        uint256 amountInWithFee = (amountIn * FEE_NUMERATOR) / FEE_DENOMINATOR;
+
+        uint256 amountOut = (reserveWeth * amountInWithFee) /
+            (reserveDai + amountInWithFee);
+
+        if (amountOut >= reserveWeth) revert InsufficientLiquidity();
+        if (amountOut == 0) revert SlippageTooHigh();
+
+        daiToken.transferFrom(msg.sender, address(this), amountIn);
+        wEthToken.transfer(msg.sender, amountOut);
+
+        _syncReserve();
+    }
+
+    // function swapTokens(address token) external {
+    //     if (token == address(0)) revert InvalidAddress();
+
+    // }
 }
