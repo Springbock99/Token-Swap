@@ -61,12 +61,38 @@ contract TokenSwapTest is Test {
 
     function test_addLiquidity() public {
         vm.prank(user1);
-        simpleSwap.addLiquidity(100 * 1e18, 100 * 1e18);
+        simpleSwap.addLiquidity(10 * 1e18, 10 * 1e18);
 
         uint256 user1BalanceDai = daiToken.balanceOf(user1);
         uint256 user2BalanceWeth = wEthToken.balanceOf(user1);
 
-        assertEq(user1BalanceDai, totalSupply - 100 * 1e18);
-        assertEq(user2BalanceWeth, totalSupply - 100 * 1e18);
+        assertEq(user1BalanceDai, totalSupply - 10 * 1e18);
+        assertEq(user2BalanceWeth, totalSupply - 10 * 1e18);
+    }
+
+    function test_syncReserve() public {
+        vm.prank(user1);
+        simpleSwap.addLiquidity(10 * 1e18, 10 * 1e18);
+
+        uint256 reserveDai = simpleSwap.reserveDai();
+        uint256 reserveWeth = simpleSwap.reserveWeth();
+
+        assertEq(reserveDai, daiToken.balanceOf(address(simpleSwap)));
+        assertEq(reserveWeth, wEthToken.balanceOf(address(simpleSwap)));
+
+        vm.prank(user2);
+        simpleSwap.addLiquidity(10 * 1e18, 10 * 1e18);
+
+        uint256 reserveDaiAfterResupply = simpleSwap.reserveDai();
+        uint256 reserveWethAfterResuply = simpleSwap.reserveWeth();
+
+        assertEq(
+            reserveDaiAfterResupply,
+            daiToken.balanceOf(address(simpleSwap))
+        );
+        assertEq(
+            reserveWethAfterResuply,
+            wEthToken.balanceOf(address(simpleSwap))
+        );
     }
 }
