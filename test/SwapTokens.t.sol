@@ -95,4 +95,28 @@ contract TokenSwapTest is Test {
             wEthToken.balanceOf(address(simpleSwap))
         );
     }
+
+    function test_basicSwapDaiForWeth() public {
+        vm.prank(user2);
+        simpleSwap.addLiquidity(100 * 1e18, 100 * 1e18);
+
+        uint256 user1BalanceDaiBefore = daiToken.balanceOf(user1);
+        uint256 user1BalanceWethBefore = wEthToken.balanceOf(user1);
+
+        uint256 reserveWeth = wEthToken.balanceOf(address(simpleSwap));
+        uint256 reserveDai = daiToken.balanceOf(address(simpleSwap));
+
+        uint256 amountInWithFee = (10 * 1e18 * 997) / 1000;
+        uint256 amountOut = (reserveWeth * amountInWithFee) /
+            (reserveDai + amountInWithFee);
+
+        vm.prank(user1);
+        simpleSwap.swapDaiForWeth(10 * 1e18);
+
+        uint256 user1BalanceDaiAfter = daiToken.balanceOf(user1);
+        uint256 user1BalanceWethAfter = wEthToken.balanceOf(user1);
+
+        assertEq(user1BalanceDaiBefore - 10 * 1e18, user1BalanceDaiAfter);
+        assertEq(user1BalanceWethAfter, user1BalanceWethBefore + amountOut);
+    }
 }
