@@ -97,6 +97,7 @@ contract TokenSwapTest is Test {
     }
 
     function test_basicSwapDaiForWeth() public {
+        uint256 amountIn = 10 * 1e18;
         vm.prank(user2);
         simpleSwap.addLiquidity(100 * 1e18, 100 * 1e18);
 
@@ -111,12 +112,25 @@ contract TokenSwapTest is Test {
             (reserveDai + amountInWithFee);
 
         vm.prank(user1);
-        simpleSwap.swapDaiForWeth(10 * 1e18);
+        simpleSwap.swapDaiForWeth(amountIn);
 
         uint256 user1BalanceDaiAfter = daiToken.balanceOf(user1);
         uint256 user1BalanceWethAfter = wEthToken.balanceOf(user1);
 
-        assertEq(user1BalanceDaiBefore - 10 * 1e18, user1BalanceDaiAfter);
+        assertEq(user1BalanceDaiBefore - amountIn, user1BalanceDaiAfter);
         assertEq(user1BalanceWethAfter, user1BalanceWethBefore + amountOut);
+    }
+
+    function test_slippage() public {
+        uint256 amountIn = 0.1 * 1e18;
+
+        vm.prank(user2);
+        simpleSwap.addLiquidity(10 * 1e18, 10 * 1e18);
+
+        vm.prank(user1);
+        vm.expectRevert(
+            abi.encodeWithSelector(SimpleSwap.SlippageTooHigh.selector)
+        );
+        simpleSwap.swapDaiForWeth(amountIn);
     }
 }
